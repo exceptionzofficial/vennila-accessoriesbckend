@@ -1,11 +1,17 @@
 const admin = require('firebase-admin');
-const path = require('path');
 
-// Path to your service account key
-const serviceAccountPath = 'F:\\New folder (40)\\vennila-accessories-firebase-adminsdk-fbsvc-a4cf526345.json';
+let serviceAccount;
+
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  // If environment variable is set (Vercel)
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else {
+  // Local development path
+  serviceAccount = require('F:\\New folder (40)\\vennila-accessories-firebase-adminsdk-fbsvc-a4cf526345.json');
+}
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountPath)
+  credential: admin.credential.cert(serviceAccount)
 });
 
 const db = admin.firestore();
