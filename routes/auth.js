@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const { db } = require('../config/firebase');
 
 const router = express.Router();
@@ -121,10 +122,27 @@ router.post('/forgot-password', async (req, res) => {
             otpExpires: Date.now() + 10 * 60 * 1000
         });
 
-        // In a real app, send email here. For now, log it.
-        console.log(`OTP for ${email}: ${otp}`);
+        // Send email using nodemailer
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT,
+            secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
 
-        res.status(200).json({ success: true, message: 'OTP sent to email (check console in dev)' });
+        await transporter.sendMail({
+            from: `"Vennila Accessories" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Password Reset OTP - Vennila Accessories',
+            text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
+        });
+
+        console.log(`OTP sent via email for ${email}: ${otp}`);
+
+        res.status(200).json({ success: true, message: 'OTP sent to email' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

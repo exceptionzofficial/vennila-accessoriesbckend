@@ -7,7 +7,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 } else {
   // Local development path
-  serviceAccount = require('F:\\New folder (40)\\vennila-accessories-firebase-adminsdk-fbsvc-a4cf526345.json');
+  serviceAccount = require('f:\\vennila\\vennila-accessories-firebase-adminsdk-fbsvc-a4cf526345.json');
 }
 
 admin.initializeApp({
