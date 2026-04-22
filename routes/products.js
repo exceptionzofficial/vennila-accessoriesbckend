@@ -16,9 +16,11 @@ router.get('/', async (req, res) => {
 
         // Try to get from Redis (with fallback if Redis is down)
         try {
-            const cachedProducts = await client.get(cacheKey);
-            if (cachedProducts) {
-                return res.status(200).json(JSON.parse(cachedProducts));
+            if (client.isOpen) {
+                const cachedProducts = await client.get(cacheKey);
+                if (cachedProducts) {
+                    return res.status(200).json(JSON.parse(cachedProducts));
+                }
             }
         } catch (redisError) {
             console.error('Redis GET error:', redisError);
@@ -26,6 +28,7 @@ router.get('/', async (req, res) => {
 
         let query = productsCol.orderBy('createdAt', 'desc');
         if (category) {
+            console.log(`Searching for category: "${category}"`);
             query = query.where('category', '==', category);
         }
 
@@ -34,14 +37,21 @@ router.get('/', async (req, res) => {
 
         // Save to Redis (expire in 1 hour)
         try {
-            await client.setEx(cacheKey, 3600, JSON.stringify(products));
+            if (client.isOpen) {
+                await client.setEx(cacheKey, 3600, JSON.stringify(products));
+            }
         } catch (redisError) {
             console.error('Redis SET error:', redisError);
         }
 
         res.status(200).json(products);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error('API Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
