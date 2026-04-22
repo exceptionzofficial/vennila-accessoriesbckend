@@ -19,12 +19,15 @@ router.get('/', async (req, res) => {
             if (client.isOpen) {
                 const cachedProducts = await client.get(cacheKey);
                 if (cachedProducts) {
+                    res.setHeader('X-Cache', 'HIT');
                     return res.status(200).json(JSON.parse(cachedProducts));
                 }
             }
         } catch (redisError) {
             console.error('Redis GET error:', redisError);
         }
+
+        res.setHeader('X-Cache', 'MISS');
 
         let query = productsCol;
         if (category) {
