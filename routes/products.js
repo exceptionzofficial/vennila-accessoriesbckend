@@ -26,14 +26,17 @@ router.get('/', async (req, res) => {
             console.error('Redis GET error:', redisError);
         }
 
-        let query = productsCol.orderBy('createdAt', 'desc');
+        let query = productsCol;
         if (category) {
             console.log(`Searching for category: "${category}"`);
             query = query.where('category', '==', category);
         }
 
         const snapshot = await query.get();
-        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Sort in-memory to avoid FAILED_PRECONDITION (missing index)
+        products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Save to Redis (expire in 1 hour)
         try {
