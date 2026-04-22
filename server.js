@@ -16,8 +16,10 @@ const app = express();
 // Body parser
 app.use(express.json());
 
-// Enable CORS
-app.use(cors());
+// Enable CORS and expose custom headers
+app.use(cors({
+    exposedHeaders: ['X-Cache']
+}));
 
 // Basic Route for testing
 app.get('/', (req, res) => {
