@@ -65,12 +65,10 @@ router.get('/technician/:id', async (req, res) => {
 // Update request status
 router.put('/update/:id', async (req, res) => {
   try {
-    const { status, technicianId } = req.body;
     const updateData = { 
-      status, 
+      ...req.body,
       updatedAt: new Date().toISOString() 
     };
-    if (technicianId) updateData.technicianId = technicianId;
 
     await db.collection(COLLECTION).doc(req.params.id).update(updateData);
     res.json({ success: true });
